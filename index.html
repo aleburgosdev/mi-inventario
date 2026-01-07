@@ -1,0 +1,1793 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Control de Inventario — Firebase + WooCommerce Dinámico ☁️🛍️</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css">
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+  
+  <!-- ✅ NUEVA: Librería para generar PDFs -->
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  
+  <!-- ✅ SISTEMA DE LICENCIAS -->
+  <script src="js/license-validator.js"></script>
+  
+  <!-- ✅ ESCÁNER QR/CÓDIGO DE BARRAS -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  
+  <!-- ✅ GENERADOR QR CÓDIGOS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <style>
+    /* Estilos para modales modernos */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+      position: relative;
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .modal-subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .modal-input-group {
+      margin-bottom: 20px;
+    }
+
+    .modal-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+
+    .modal-error {
+      background: #fee;
+      color: #c53030;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #c53030;
+      font-size: 14px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 25px;
+    }
+
+    .modal-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 100px;
+    }
+
+    .modal-button.cancel {
+      background: #f8f9fa;
+      color: #666;
+      border: 1px solid #dee2e6;
+    }
+
+    .modal-button.cancel:hover {
+      background: #e9ecef;
+    }
+
+    .modal-button.validate {
+      background: linear-gradient(135deg, #0066cc, #0052a3);
+      color: white;
+    }
+
+    .modal-button.validate:hover {
+      background: linear-gradient(135deg, #0052a3, #003d82);
+      transform: translateY(-1px);
+    }
+
+    .modal-button.validate:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    /* Animaciones */
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .modal-content {
+        margin: 20px;
+        padding: 20px;
+      }
+      
+      .modal-buttons {
+        flex-direction: column;
+      }
+      
+      .modal-button {
+        width: 100%;
+      }
+    }
+
+    /* ✅ ESTILOS PARA PANTALLA DE LICENCIAS */
+    #license-screen {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #license-screen input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      outline: none;
+    }
+
+    #license-screen .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    /* Indicador de estado de licencia mejorado */
+    #license-status-indicator {
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* ========================================
+       ESTILOS DEL ESCÁNER QR/CÓDIGO DE BARRAS
+       ======================================== */
+    
+    #scanner-modal .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    #scanner-container {
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    #reader {
+      width: 100%;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1a;
+    }
+    
+    #reader video {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: cover;
+    }
+    
+    /* Marco de escaneo animado */
+    .scanner-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      height: 40%;
+      border: 3px solid #28a745;
+      border-radius: 10px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      animation: scanner-pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes scanner-pulse {
+      0%, 100% {
+        border-color: #28a745;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      }
+      50% {
+        border-color: #20c997;
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      }
+    }
+    
+    #scanner-modal #scanner-status {
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    
+    #scanner-modal #scanner-status.scanning {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    #scanner-modal #scanner-status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    #scanner-modal #scanner-status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    /* Loading spinner para el escáner */
+    .scanner-loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #28a745;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    
+    /* Responsive para el escáner */
+    @media (max-width: 576px) {
+      #scanner-modal .modal-content {
+        width: 98%;
+        margin: 10px;
+        padding: 20px;
+      }
+      
+      #reader {
+        min-height: 250px;
+      }
+      
+      #scanner-modal .modal-buttons {
+        flex-direction: column;
+      }
+      
+      #scanner-modal .modal-button {
+        width: 100%;
+      }
+    }
+
+    /* ========================================
+       ESTILOS DEL MODAL QR - ETIQUETAS
+       ======================================== */
+    
+    #qr-label-modal .modal-content {
+      background: white;
+      max-width: 400px;
+      width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    #qr-label-preview {
+      background: white;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      margin: 15px 0;
+    }
+    
+    #qr-label-preview.has-content {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    
+    .qr-label-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      display: inline-block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .qr-label-card .qr-code {
+      margin: 10px 0;
+    }
+    
+    .qr-label-card .product-info {
+      font-size: 12px;
+      text-align: left;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #ddd;
+    }
+    
+    .qr-label-card .product-info strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    
+    .qr-label-card .sku {
+      color: #666;
+      font-size: 11px;
+    }
+    
+    .qr-label-card .price {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+    
+    /* Estilos para impresión */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #qr-print-area, #qr-print-area * {
+        visibility: visible;
+      }
+      #qr-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .print-label {
+        page-break-inside: avoid;
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        display: inline-block;
+        width: 200px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Botón Hamburguesa para Móvil -->
+  <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Overlay del menú móvil -->
+  <div class="menu-overlay" id="menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Indicadores de estado para móvil -->
+  <div class="mobile-connection-status">
+    <span id="mobile-status-indicator">🔥 Firebase</span>
+    <span id="mobile-woo-status" style="display:none">🛍️ Woo</span>
+    <span id="mobile-auth-status" style="display:none">🔐 Auth</span>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo">IT</div>
+        <div>
+          <h1>Inventario Dinámico</h1>
+          <div class="small">☁️ Firebase + 🛍️ WooCommerce</div>
+        </div>
+      </div>
+      <nav>
+        <div class="menu-btn active" data-page="dashboard" onclick="navigateMobile('dashboard', this)">
+          📊 <span>Dashboard</span>
+        </div>
+        <div class="menu-btn" data-page="productos" onclick="navigateMobile('productos', this)">
+          🧩 <span>Productos</span>
+        </div>
+        <div class="menu-btn" data-page="agregar" onclick="navigateMobile('agregar', this)">
+          ➕ <span>Agregar Producto</span>
+        </div>
+        <div class="menu-btn" data-page="pedidos" onclick="navigateMobile('pedidos', this)">
+          📦 <span>Stock bajo</span>
+        </div>
+        <div class="menu-btn" data-page="compras" onclick="navigateMobile('compras', this)">
+          📋 <span>Órdenes</span>
+        </div>
+        <div class="menu-btn" data-page="ventas" onclick="navigateMobile('ventas', this)">
+          🛒 <span>Registrar Venta</span>
+        </div>
+        <div class="menu-btn" data-page="proveedores" onclick="navigateMobile('proveedores', this)">
+          🤝 <span>Proveedores</span>
+        </div>
+        <div class="menu-btn" data-page="envios" onclick="navigateMobile('envios', this)">
+          🚚 <span>Envíos</span>
+        </div>
+        <div class="menu-btn" data-page="kardex" onclick="navigateMobile('kardex', this)">
+          📊 <span>Kardex</span>
+        </div>
+        <div class="menu-btn" data-page="pageTickets" onclick="navigateMobile('pageTickets', this)">
+          🧾 <span>Tickets</span>
+        </div>
+        <div class="menu-btn" data-page="config" onclick="navigateMobile('config', this)">
+          ⚙️ <span>Configuración</span>
+        </div>
+
+        <div style="margin-top:10px" class="small muted">Herramientas</div>
+        <div class="menu-btn" onclick="exportData(); closeMobileMenu()">⬇️ Backup</div>
+        <div class="menu-btn" onclick="syncAllProductsWithWoo(); closeMobileMenu()">⬆️ Enviar WooC</div>
+        <div class="menu-btn" onclick="fetchProductsFromWooCommerce(); closeMobileMenu()">⬇️ Obtener WooC</div>
+        <div class="menu-btn" onclick="syncFromWooCommerce(); closeMobileMenu()">🔄 Actualizar</div>
+      </nav>
+
+      <div style="margin-top:auto;font-size:13px; text-align:center" class="small muted">
+        <div>
+          <span id="status-indicator" style="color:orange">🔥 Firebase: Conectando...</span>
+        </div>
+        <div style="margin-top:5px">
+          <span id="firebase-connection-status" style="color:orange">🔥 Firebase: No configurado</span>
+        </div>
+        <div style="margin-top:5px">
+          <span id="woo-connection-status" style="color:orange">🛍️ WooCommerce: No configurado</span>
+        </div>
+        <!-- ✅ INDICADOR DE LICENCIA -->
+        <div style="margin-top:10px">
+          <span id="license-status-indicator" style="color:orange">🔒 Licencia: Validando...</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      
+
+      <section id="dashboard" class="page">
+         <div>
+          <h2 id="page-title">Dashboard</h2>
+          <div class="small muted">Control de inventario sincronizado — Firebase + WooCommerce Dinámicos</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px">
+          <button onclick="limpiarDashboard()" style="background:#026669">🧹 Limpiar Dashboard</button>
+        </div>
+        <div class="grid">
+          <div class="col-8">
+            <div class="card">
+              <h3>Ventas recientes</h3>
+              <table id="sales-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Ganancia</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div style="height:18px"></div>
+            <div class="card">
+              <canvas id="salesChart" height="120"></canvas>
+            </div>
+            <div style="height:18px"></div>
+            <div class="card">
+              <h3>⏱️ Análisis de Rendimiento de Proveedores</h3>
+              <div style="display:flex;gap:20px;align-items:center;margin-bottom:15px">
+                <div>
+                  <div style="font-size:24px;font-weight:bold;color:#026669" id="tiempo-promedio-entrega">-</div>
+                  <div style="font-size:12px;color:#666">Tiempo promedio (días)</div>
+                </div>
+                <div>
+                  <div style="font-size:24px;font-weight:bold;color:#28a745" id="mejor-proveedor">-</div>
+                  <div style="font-size:12px;color:#666">Mejor proveedor</div>
+                </div>
+                <div>
+                  <div style="font-size:24px;font-weight:bold;color:#dc3545" id="peor-proveedor">-</div>
+                  <div style="font-size:12px;color:#666">Proveedor a mejorar</div>
+                </div>
+              </div>
+              <canvas id="proveedoresChart" height="100"></canvas>
+              <div style="margin-top:10px;padding:10px;background:#f8f9fa;border-radius:6px;font-size:12px;color:#495057">
+                📊 <strong>Métrica:</strong> Tiempo desde estado "Pedido" hasta "Entregado" (en días)
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="card">
+              <h3>Resumen</h3>
+              <p>Total ventas: <strong id="summary-sales">0</strong></p>
+              <p>Ganancia total: <strong id="summary-profit">0</strong></p>
+              <p>Productos en stock: <strong id="summary-stock">0</strong></p>
+            </div>
+            <div style="height:12px"></div>
+            <div class="card">
+              <h3>Top productos</h3>
+              <ul id="top-products"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="productos" class="page" style="display:none">
+        <div class="search">
+          <input id="search-input" placeholder="Buscar producto por nombre o SKU" oninput="globalSearch(this.value)" />
+          <button onclick="newProduct()">+ Nuevo</button>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h3>Productos</h3>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select id="category-filter" onchange="renderProducts()">
+                <option value="">Todas las categorias</option>
+              </select>
+              <!-- Botones originales -->
+              <button onclick="syncAllProductsWithWoo()" title="Enviar productos a WooCommerce (con hotfix)">⬆️ Enviar</button>
+              <button onclick="fetchProductsFromWooCommerce()" title="Obtener productos desde WooCommerce">⬇️ Obtener desde WooCommerce</button>
+              
+              <!-- ✅ NUEVOS BOTONES DE MEJORAS V2.0 -->
+              <button onclick="syncAllProductsWithWooImproved()" title="Sincronización mejorada con mejor interfaz" style="background:#17a2b8;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">🚀 Actualizar Productos de WC</button>
+              
+              <!-- ✅ NUEVOS BOTONES DE CONVERSIÓN AUTOMÁTICA DE IMÁGENES -->
+            </div>
+            
+           
+          </div>
+          <!-- CORRECCIÓN: Cambiar ID de 'products-list' a 'products-list' para que coincida con JS -->
+          <div id="products-list" class="products"></div>
+          <div style="margin-top:12px;display:flex;justify-content:center;gap:8px">
+            <button onclick="prevPage()">◀</button>
+            <div class="muted">Página <span id="page-num">1</span></div>
+            <button onclick="nextPage()">▶</button>
+          </div>
+          <!-- Contenedor de paginación (FALTANTE) -->
+          <div id="pagination" style="margin-top:12px;display:flex;justify-content:center;gap:8px"></div>
+        </div>
+      </section>
+
+      <section id="agregar" class="page" style="display:none">
+        <div class="card">
+          <h3>Agregar / Editar Producto</h3>
+          <form id="product-form" onsubmit="saveProduct(event)">
+            <div class="row">
+              <div style="flex: 1;">
+                <label>📸 Fotos del Producto</label>
+                <div id="imagenes-container" style="margin-top: 8px;">
+                  <div class="imagen-preview" id="imagenes-preview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;"></div>
+                  <div class="upload-area" id="upload-area" style="border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s;" onclick="document.getElementById('p-imagenes').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
+                    <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
+                    <div style="color: #666; margin-bottom: 5px;">Haz clic para subir imágenes</div>
+                    <div style="font-size: 12px; color: #999;">o arrastra archivos aquí</div>
+                    <div style="font-size: 11px; color: #bbb; margin-top: 5px;">JPG, PNG, WEBP - Máx 5MB cada una</div>
+                  </div>
+                  <input type="file" id="p-imagenes" multiple accept="image/*" style="display: none;" onchange="handleImageUpload(event)" />
+                  <div id="imagenes-info" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                  <button type="button" onclick="clearAllImages()" style="margin-top: 10px; padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="Eliminar todas las imágenes">
+                    🗑️ Limpiar Todas las Imágenes
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="row" style="align-items: flex-end;">
+              <div style="flex: 1;">
+                <label>SKU / Código</label>
+                <input id="p-sku" required placeholder="Ingresa o escanea el código" />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button type="button" onclick="abrirScanner()" style="background: linear-gradient(135deg, #28a745, #20c997); padding: 10px 15px; white-space: nowrap;">
+                  📷 Escanear
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div style="flex: 2;">
+                <label>Variantes del Producto</label>
+                <div id="variantes-container" style="margin-top: 8px;">
+                  <div class="variante-row" style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <select class="variante-tipo" style="flex: 1; padding: 6px;">
+                      <option value="">Seleccionar tipo</option>
+                      <option value="Color">Color</option>
+                      <option value="Talla">Talla</option>
+                      <option value="Material">Material</option>
+                      <option value="Tamaño">Tamaño</option>
+                      <option value="Estilo">Estilo</option>
+                      <option value="Modelo">Modelo</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                    <input class="variante-valor" placeholder="Ej: Rojo, XL, Algodón" style="flex: 2; padding: 6px;" />
+                    <button type="button" class="remove-variante" onclick="removeVariante(this)" style="background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;">✕</button>
+                  </div>
+                </div>
+                <button type="button" onclick="addVariante()" style="margin-top: 8px; background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">+ Agregar Variante</button>
+                <input type="hidden" id="p-variantes" value="[]" />
+              </div>
+              
+            </div>
+            
+            <!-- Nueva sección de imágenes -->
+            
+            <div><label>Nombre</label><input id="p-name" required /></div>
+            <div class="row">
+              <div><label>Proveedor</label><select id="p-supplier"></select></div>
+              <div><label>Marca</label><input id="p-brand" /></div>
+            </div>
+            <div class="row">
+              <div><label>Categoria</label><input id="p-category" placeholder="ej: Celulares" /></div>
+              <div><label>Stock</label><input id="p-stock" type="number" value="0" min="0" /></div>
+            </div>
+            <div class="row">
+              <div><label>Costo proveedor</label><input id="p-cost" type="number" step="0.01" value="0"
+                  oninput="updateProfitPreview()" /></div>
+              <div><label>Costo envío</label><input id="p-ship" type="number" step="0.01" value="0"
+                  oninput="updateProfitPreview()" /></div>
+            </div>
+            <div class="row">
+              <div><label>Comisión MP (%)</label><input id="p-commission" type="number" step="0.01" value="0"
+                  oninput="updateProfitPreview()" /></div>
+              <div><label>Precio Venta</label><input id="p-price" type="number" step="0.01" value="0"
+                  oninput="updateProfitPreview()" /></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
+              <div><label>Publicado en..</label>
+                <div style="display:flex;gap:8px;margin-top:6px">
+                  <label><input type="checkbox" id="pub-ml" /> ML</label>
+                  <label><input type="checkbox" id="pub-fb" /> Facebook</label>
+                  <label><input type="checkbox" id="pub-ig" /> IG</label>
+                  <label><input type="checkbox" id="pub-wc" /> WooCommerce</label>
+                </div>
+              </div>
+              <div style="margin-left:auto;text-align:right">
+                <div class="small muted">Ganancia estimada</div>
+                <div style="font-weight:700" id="profit-preview">ARS 0 (0%)</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button type="submit">Guardar</button>
+              <button type="button" onclick="resetForm()">Limpiar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="ventas" class="page" style="display:none">
+        <div class="card">
+          <h3>Registrar Venta</h3>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px">
+            <button onclick="eliminarVentas()" style="background:#026669">🗑️ Eliminar historial</button>
+          </div>
+          <form onsubmit="registerSale(event)">
+            <div class="row">
+              <div style="flex: 2;">
+                <label>Producto</label>
+                <input list="products-datalist" id="sale-product" required
+                    oninput="fillSalePrice()" placeholder="Buscar o escanear..." /><datalist id="products-datalist"></datalist>
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button type="button" onclick="abrirScannerVentas()" style="background: linear-gradient(135deg, #28a745, #20c997); padding: 10px 15px; white-space: nowrap;" title="Escanear QR del producto">
+                  📷 Escanear
+                </button>
+              </div>
+              <div><label>Precio (ARS)</label><input id="sale-price" type="number" step="0.01" required /></div>
+            </div>
+            <div class="row">
+              <div><label>Cantidad</label><input id="sale-qty" type="number" value="1" min="1" required /></div>
+              <div><label>Metodo</label><select id="sale-method">
+                  <option>Mercado Pago</option>
+                  <option>Efectivo</option>
+                  <option>Tarjeta</option>
+                </select>
+                <div style="margin-top:12px"><label><input type="checkbox" id="con-envio"
+                      onchange="toggleEnvioForm(this.checked)"> Con envío</label></div>
+                <div id="envio-form"
+                  style="display:none;margin-top:12px;border:1px solid #eee;padding:10px;border-radius:8px">
+                  <h4>Datos del envío</h4>
+                  <div class="row">
+                    <div><label>Nombre</label><input id="envio-nombre" /></div>
+                    <div><label>Tel</label><input id="envio-tel" /></div>
+                  </div>
+                  <div class="row">
+                    <div><label>Dirección</label><input id="envio-dir" /></div>
+                    <div><label>Ciudad</label><input id="envio-ciudad" /></div>
+                  </div>
+                  <div><label>Comentarios</label><textarea id="envio-coment" rows="2"></textarea></div>
+                </div>
+              </div>
+            </div>
+            <div style="margin:10px 0;">
+              <input id="cliente-nombre" placeholder="Nombre y Apellido del Cliente"
+                style=" padding:10px; border-radius:10px; border:1px solid #ccc;">
+            </div>
+
+            <button type="button" onclick="generarReciboX()" class="primary-btn" style="background:#333">
+              🧾 Generar Recibo X
+            </button>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button type="submit">Vender</button>
+              <button type="button" onclick="clearSaleForm()">Limpiar</button>
+            </div>
+          </form>
+        </div>
+        <div style="height:12px"></div>
+        <div class="card">
+          <h3>Historial de ventas</h3>
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px">
+            <button onclick="syncProductsFromWooCommerce()"
+              style="background:#0066cc;color:white;padding:8px 15px;border:none;border-radius:6px;cursor:pointer">
+              📦 Sincronizar inventario
+            </button>
+            <button onclick="syncSalesFromWooCommerce()"
+              style="background:#28a745;color:white;padding:8px 15px;border:none;border-radius:6px;cursor:pointer">
+              🔄 Sincronizar ventas
+            </button>
+            <button onclick="eliminarVentas()"
+              style="background:#dc3545;color:white;padding:8px 15px;border:none;border-radius:6px;cursor:pointer">
+              🗑️ Eliminar historial
+            </button>
+          </div>
+          <table id="sales-log">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cant</th>
+                <th>Total</th>
+                <th>Envío</th>
+                <th>Origen</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="proveedores" class="page" style="display:none">
+        <div class="card">
+          <h3>Proveedores</h3>
+          <form id="supplier-form" onsubmit="saveSupplier(event)">
+            <div class="row">
+              <div><label>Nombre</label><input id="s-name" required /></div>
+              <div><label>Web</label><input id="s-web" /></div>
+            </div>
+            <div class="row">
+              <div><label>Whatsapp (549...)</label><input id="s-wp" /></div>
+              <div><label>Email</label><input id="s-email" type="email" /></div>
+            </div>
+            <div><label>Descripción</label><textarea id="s-desc"></textarea></div>
+            <div style="display:flex;gap:8px;margin-top:10px"><button type="submit">Guardar</button><button
+                type="button" onclick="resetSupplierForm()">Limpiar</button></div>
+          </form>
+        </div>
+        <div style="height:12px"></div>
+        <div class="card">
+          <h3>Lista de proveedores</h3>
+          <table id="suppliers-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Web</th>
+                <th>Whatsapp</th>
+                <th>Email</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="pedidos" class="page" style="display:none">
+        <div class="card">
+          <h3>Consulta de pedidos</h3>
+          <input id="buscar-pedido" placeholder="Buscar..." oninput="buscarPedido(this.value)"
+            style="margin-bottom:10px;width:100%;padding:10px;border-radius:8px;border:1px solid #eee" />
+          <table id="tabla-pedidos" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="padding:8px">SKU</th>
+                <th style="padding:8px">Nombre</th>
+                <th style="padding:8px">Stock</th>
+                <th style="padding:8px">Proveedor</th>
+                <th style="padding:8px">Estado</th>
+                <th style="padding:8px">Acción</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="envios" class="page" style="display:none">
+        <div class="card">
+          <h3>Gestión de envíos</h3>
+          <input id="buscar-envio" placeholder="Buscar..." oninput="buscarEnvio(this.value)"
+            style="margin-bottom:10px;width:100%;padding:10px;border-radius:8px;border:1px solid #eee" />
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px">
+            <button onclick="limpiarEnvios()" style="background:#026669">🧹 Limpiar Envíos</button>
+          </div>
+          <table id="tabla-envios" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECCIÓN KARDEX PROMEDIO -->
+      <section id="kardex" class="page" style="display:none; padding: 5px ">
+        <div>
+          <h2>📊 Kardex Promedio</h2>
+          <div class="small muted">Análisis de rotación y promedio de inventario por producto</div>
+        </div>
+        
+        <!-- Filtros de fecha -->
+        <div class="card" style="margin-bottom:15px">
+          <h3>🔍 Filtros</h3>
+          <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:end">
+            <div>
+              <label>Fecha Inicio</label>
+              <input type="date" id="kardex-fecha-inicio" />
+            </div>
+            <div>
+              <label>Fecha Fin</label>
+              <input type="date" id="kardex-fecha-fin" />
+            </div>
+            <div>
+              <label>Proveedor</label>
+              <select id="kardex-proveedor">
+                <option value="">Todos los proveedores</option>
+              </select>
+            </div>
+            <div>
+              <label>Categoría</label>
+              <select id="kardex-categoria">
+                <option value="">Todas las categorías</option>
+              </select>
+            </div>
+            <button onclick="calcularKardexPromedioGeneral()">📊 Calcular Kardex</button>
+            <button onclick="exportarKardexPDF()" style="background:#dc3545">📄 Exportar PDF</button>
+            <button onclick="exportarKardexExcel()" style="background:#28a745">📊 Exportar Excel</button>
+          </div>
+        </div>
+
+        <!-- Resumen de métricas -->
+        <div class="grid-2" style="margin-bottom:15px">
+          <div class="col-3">
+            <div class="card" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:white">
+              <div style="font-size:12px;opacity:0.9">Valor Total Inventario</div>
+              <div style="font-size:28px;font-weight:bold" id="kardex-valor-total">-</div>
+              <div style="font-size:11px;opacity:0.8">Bs. total en stock</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="card" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+              <div style="font-size:12px;opacity:0.9">Inventario Promedio</div>
+              <div style="font-size:28px;font-weight:bold" id="kardex-inv-promedio">-</div>
+              <div style="font-size:11px;opacity:0.8">Unidades promedio</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="card" style="background:linear-gradient(135deg,#f093fb,#f5576c);color:white">
+              <div style="font-size:12px;opacity:0.9">Rotación Promedio</div>
+              <div style="font-size:28px;font-weight:bold" id="kardex-rotacion">-</div>
+              <div style="font-size:11px;opacity:0.8">Veces por período</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="card" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:white">
+              <div style="font-size:12px;opacity:0.9">Total Entradas</div>
+              <div style="font-size:28px;font-weight:bold" id="kardex-entradas">-</div>
+              <div style="font-size:11px;opacity:0.8">Unidades recibidas</div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="card" style="background:linear-gradient(135deg,#fa709a,#fee140);color:white">
+              <div style="font-size:12px;opacity:0.9">Total Salidas</div>
+              <div style="font-size:28px;font-weight:bold" id="kardex-salidas">-</div>
+              <div style="font-size:11px;opacity:0.8">Unidades vendidas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid" style="margin-bottom:15px">
+          <div class="col-6">
+            <div class="card">
+              <h3>📈 Rotación por Producto</h3>
+              <div style="height: 300px; position: relative;">
+                <canvas id="kardex-rotacion-chart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>📊 Entradas vs Salidas</h3>
+              <div style="height: 300px; position: relative;">
+                <canvas id="kardex-comparacion-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-bottom:15px">
+          <div class="col-6">
+            <div class="card">
+              <h3>📉 Evolución del Inventario Promedio</h3>
+              <div style="height: 300px; position: relative;">
+                <canvas id="kardex-evolucion-chart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card">
+              <h3>🎯 TOP 10 - Productos con Mayor Rotación</h3>
+              <div style="height: 300px; position: relative;">
+                <canvas id="kardex-top-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla detallada -->
+        <div class="card">
+          <h3>📋 Detalle de Kardex por Producto</h3>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+            <input id="buscar-kardex" placeholder="Buscar producto..." oninput="filtrarKardex(this.value)" 
+              style="padding:8px;border-radius:8px;border:1px solid #ddd;width:300px" />
+          </div>
+          <table id="tabla-kardex" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#f8f9fa">
+                <th style="padding:10px;text-align:left;border-bottom:2px solid #dee2e6">SKU</th>
+                <th style="padding:10px;text-align:left;border-bottom:2px solid #dee2e6">Producto</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Stock Inicial</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Entradas</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Salidas</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Stock Final</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Promedio</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Rotación</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Días Stock</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Leyenda interpretativa -->
+        <div class="card" style="margin-top:15px;background:#f8f9fa">
+          <h3 style="color:#026669">📖 Interpretación del Kardex</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;font-size:13px">
+            <div>
+              <strong style="color:#667eea">📊 Inventario Promedio:</strong>
+              <p style="margin:5px 0;color:#666">Media de unidades en stock durante el período analizado. Fórmula: (Stock Inicial + Stock Final) / 2</p>
+            </div>
+            <div>
+              <strong style="color:#f5576c">🔄 Rotación:</strong>
+              <p style="margin:5px 0;color:#666">Número de veces que el inventario se renueva. Fórmula: Total Salidas / Inventario Promedio</p>
+            </div>
+            <div>
+              <strong style="color:#43e97b">📦 Días de Stock:</strong>
+              <p style="margin:5px 0;color:#666">Días que durarían las existencias actuales. Fórmula: Stock Actual / (Salidas Promedio Diarias)</p>
+            </div>
+            <div>
+              <strong style="color:#4facfe">⚠️ Interpretación:</strong>
+              <p style="margin:5px 0;color:#666">Rotación alta = buena venta. Rotación baja = posible sobre-stock o producto lento.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="compras" class="page" style="display:none">
+        <div class="card">
+          <h3>Órdenes de Compra a Proveedores</h3>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:15px">
+            <button onclick="limpiarOrdenesCompra()" style="background:#026669">🧹 Limpiar Órdenes</button>
+          </div>
+          
+          <!-- Botón para crear nueva orden -->
+          <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button onclick="abrirModalNuevaOrden()" style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1)">
+              📋 Nueva Orden de Compra
+            </button>
+      
+          </div>
+
+          <!-- Resumen de órdenes -->
+          <div style="display:flex;gap:15px;margin-bottom:15px;flex-wrap:wrap">
+            <div style="background:linear-gradient(135deg,#28a745,#20c997);color:white;padding:15px;border-radius:10px;flex:1;min-width:200px">
+              <div style="font-size:12px;opacity:0.9">Órdenes Pendientes</div>
+              <div style="font-size:24px;font-weight:bold" id="ordenes-pendientes">0</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#ffc107,#fd7e14);color:white;padding:15px;border-radius:10px;flex:1;min-width:200px">
+              <div style="font-size:12px;opacity:0.9">En Tránsito</div>
+              <div style="font-size:24px;font-weight:bold" id="ordenes-transito">0</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#17a2b8,#138496);color:white;padding:15px;border-radius:10px;flex:1;min-width:200px">
+              <div style="font-size:12px;opacity:0.9">Total Invertido</div>
+              <div style="font-size:24px;font-weight:bold" id="total-invertido">ARS 0</div>
+            </div>
+          </div>
+
+          <!-- Tabla de órdenes -->
+          <div style="margin-bottom:15px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <h4 style="margin:0;color:#026669">📋 Historial de Órdenes</h4>
+              <input id="buscar-orden" placeholder="Buscar por proveedor o producto..." oninput="filtrarOrdenes()" style="padding:8px;border-radius:8px;border:1px solid #ddd;width:300px" />
+            </div>
+            <table id="tabla-ordenes-compra" style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="background:#f8f9fa">
+                  <th style="padding:10px;text-align:left;border-bottom:2px solid #dee2e6">📅 Fecha</th>
+                  <th style="padding:10px;text-align:left;border-bottom:2px solid #dee2e6">🏢 Proveedor</th>
+                  <th style="padding:10px;text-align:left;border-bottom:2px solid #dee2e6">📦 Producto</th>
+                  <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Cant.</th>
+                  <th style="padding:10px;text-align:right;border-bottom:2px solid #dee2e6">Total</th>
+                  <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Estado</th>
+                  <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Días Entrega</th>
+                  <th style="padding:10px;text-align:center;border-bottom:2px solid #dee2e6">Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <!-- Reporte de cuentas por pagar -->
+          <div style="background:#fff3cd;border:1px solid #ffeaa7;border-radius:10px;padding:15px">
+            <h4 style="margin-top:0;color:#856404">💰 Cuentas por Pagar</h4>
+            <div id="reporte-cuentas-pagar">
+              <!-- Se llenará dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="config" class="page" style="display:none">
+        <div class="card">
+          <h3>Nombre del inventario</h3>
+          <input id="inv-name" placeholder="Ej: Mi Tienda" style="margin-bottom:10px">
+          <button onclick="saveInventoryName()">Guardar</button>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <h3>🔥 Firebase Configuración Dinámica</h3>
+          <div class="firebase-config-section">
+            <div class="config-status" id="firebase-connection-status">
+              Estado: No configurado
+            </div>
+
+            <div class="config-help">
+              <p><strong>¿Cómo obtener la configuración Firebase?</strong></p>
+              <ol>
+                <li>Ve a <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+                <li>Registrese o inicie sesión con cuenta de google</li>
+                <li>Selecciona tu proyecto (o crea uno nuevo)</li>
+                <li>Ve a Configuración del proyecto (⚙️) → General → Tus apps</li>
+                <li>Haz clic en "Agregar app" → Web → Registrar app</li>
+                <li>Copia la configuración del SDK de Firebase</li>
+                <li>Firebase tiene un limite del plan gratuito al registrarse. Es bastante igual pero revise el estado de uso de su firebase </li>
+                <li>Plan gratuito incluyendo alrededor de 1 GB de almacenamiento, hasta 100 conexiones simultáneas (RTDB) 
+                  o escalado a ~1M (Firestore), y cuotas diarias para lecturas y escrituras (ej. 50k lecturas, 40k escrituras en Firestore)
+                   además de unos 10 GB/mes de transferencia de datos saliente</li>
+                   
+              </ol>
+            </div>
+
+            <div class="form-group">
+              <label for="firebase-config">Configuración Firebase (JSON)</label>
+              <textarea id="firebase-config" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "licencias-378d4.firebaseapp.com",
+  "databaseURL": "https://licencias-378d4-default-rtdb.firebaseio.com",
+  "projectId": "licencias-378d4",
+  "storageBucket": "licencias-378d4.appspot.com",
+  "messagingSenderId": "123456789012",
+  "appId": "1:123456789012:web:abcdef123456789"
+}' style="width:100%;height:200px; font-family: monospace; font-size: 12px;"></textarea>
+            </div>
+
+            <div class="firebase-buttons">
+              <button onclick="saveFirebaseConfig()" class="primary">Guardar Firebase</button>
+              <button onclick="validateFirebaseConnection()">Probar Conexión</button>
+              <button onclick="loadCurrentFirebaseConfig()">Mostrar Config Actual</button>
+              <button onclick="clearFirebaseConfig()" class="danger">Restaurar Default</button>
+              <!-- ✅ NUEVO: Botón de autenticación Firebase -->
+              <button onclick="abrirModalAuth()" style="background:#ff9800;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">🔐 Autenticar Firebase</button>
+            </div>
+            
+            <!-- ✅ NUEVO: Estado de autenticación Firebase MEJORADO -->
+            <div id="firebase-auth-status" style="margin-top:15px;padding:15px;background:#f8f9fa;border-radius:8px;font-size:13px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <div id="auth-icon" style="font-size:24px;">🔓</div>
+                <div>
+                  <strong>Estado de Autenticación:</strong><br>
+                  <span id="auth-user-display" style="color:#666;">No autenticado</span>
+                </div>
+              </div>
+              <div id="auth-details" style="display:none;padding:10px;background:#fff;border-radius:6px;margin-top:10px;">
+                <div style="margin-bottom:5px;"><strong>Email:</strong> <span id="auth-user-email-detail">-</span></div>
+                <div style="margin-bottom:5px;"><strong>UID:</strong> <span id="auth-user-uid">-</span></div>
+                <div><strong>Última verificación:</strong> <span id="auth-last-check">-</span></div>
+              </div>
+              <button id="auth-show-details-btn" onclick="toggleAuthDetails()" style="
+                margin-top:10px;
+                background:#6c757d;
+                color:white;
+                border:none;
+                padding:6px 12px;
+                border-radius:4px;
+                cursor:pointer;
+                font-size:12px;
+              ">📋 Ver detalles</button>
+              <button id="auth-logout-btn-header" onclick="logoutFirebase()" style="
+                margin-top:10px;
+                margin-left:5px;
+                background:#dc3545;
+                color:white;
+                border:none;
+                padding:6px 12px;
+                border-radius:4px;
+                cursor:pointer;
+                font-size:12px;
+                display:none;
+              ">🔒 Cerrar Sesión</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <h3>🛍️ WooCommerce API - Configuración Dinámica</h3>
+          <div class="woo-config-section">
+            <div class="config-status" id="woo-connection-status">
+              Estado: No configurado
+            </div>
+
+            <div class="config-help">
+              <p><strong>¿Cómo obtener las credenciales?</strong></p>
+              <ol>
+                <li>Ve a WooCommerce → Configuración → Avanzado → REST API</li>
+                <li>Crea una nueva API Key con permisos de lectura/escritura</li>
+                <li>Copia el <em>Consumer Key</em> (comienza con "ck_") y <em>Consumer Secret</em> (comienza con "cs_")
+                </li>
+              </ol>
+            </div>
+
+            <div class="form-group">
+              <label for="woo-url">URL de la tienda WooCommerce</label>
+              <input id="woo-url" type="url" placeholder="https://mi-tienda.com" style="margin-bottom:10px;width:100%">
+            </div>
+
+            <div class="form-group">
+              <label for="woo-key">Consumer Key</label>
+              <input id="woo-key" placeholder="ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                style="margin-bottom:10px;width:100%">
+            </div>
+
+            <div class="form-group">
+              <label for="woo-secret">Consumer Secret</label>
+              <input id="woo-secret" type="password" placeholder="cs_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                style="margin-bottom:10px;width:100%">
+            </div>
+
+            <div class="woo-buttons">
+              <button onclick="saveWooConfig()" class="primary">Conectar WooCommerce</button>
+              <button onclick="validateWooConnection()">Probar Conexión</button>
+              <button onclick="loadCurrentWooConfig()">Mostrar Config Actual</button>
+              
+              <!-- ✅ BOTONES ORIGINALES -->
+              <button onclick="syncAllProductsWithWoo()" title="Enviar todos los productos a WooCommerce">⬆️ Enviar Todos</button>
+              <button onclick="fetchProductsFromWooCommerce()" title="Obtener todos los productos desde WooCommerce">⬇️ Obtener Todos</button>
+              <button onclick="syncFromWooCommerce()" title="Actualizar cambios desde WooCommerce">🔄 Actualizar Cambios</button>
+    
+              
+              <button onclick="clearWooConfig()" class="danger">Limpiar Configuración</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <h3>Seguridad</h3>
+          <p>PIN de recuperación</p>
+          <button onclick="saveNewPIN()">Cambiar PIN</button>
+        </div>
+
+        <!-- ✅ SECCIÓN DE GESTIÓN DE LICENCIAS -->
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <h3>🔒 Gestión de Licencias</h3>
+          <div class="license-management-section">
+            <div class="config-status" id="current-license-status">
+              Estado: Verificando...
+            </div>
+
+            <div id="license-details" style="margin-top:15px; padding:15px; background:#f8f9fa; border-radius:8px; display:none;">
+              <h4>Detalles de la Licencia Actual</h4>
+              <div id="license-info-content"></div>
+            </div>
+
+            <div class="license-buttons" style="margin-top:15px;">
+              <button onclick="refreshLicenseStatus()" class="primary">🔄 Actualizar Estado</button>
+              <button onclick="changeLicense()" style="background:#0066cc;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">🔄 Cambiar Licencia</button>
+              <button onclick="clearCurrentLicenseData()" class="danger">🗑️ Limpiar Licencia</button>
+              <button onclick="showLicenseHelp()" style="background:#17a2b8;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">❓ Ayuda</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOGIN -->
+      <div id="login-screen" style="
+  position:fixed; inset:0;
+  background:#f4f4f4;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:inherit;
+">
+        <h2 style="margin-bottom:20px">Acceso</h2>
+        <input id="login-user" placeholder="Usuario" style="padding:10px;width:250px;margin-bottom:10px">
+        <input id="login-pass" type="password" placeholder="Contraseña"
+          style="padding:10px;width:250px;margin-bottom:10px">
+        <button onclick="login()" style="padding:10px 20px">Ingresar</button>
+
+        <div style="margin-top:20px;font-size:14px">
+          ¿No tenés cuenta? <a href="#" onclick="showRegister()">Registrarse</a>
+        </div>
+        <div style="margin-top:10px;font-size:14px">
+          <a href="#" onclick="showRecovery()">¿Olvidaste tu contraseña?</a>
+        </div>
+      </div>
+
+      <!-- REGISTRO -->
+      <div id="register-screen" style="
+  display:none; position:fixed; inset:0;
+  background:#f4f4f4;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:inherit;
+">
+        <h2 style="margin-bottom:20px">Registro</h2>
+        <input id="reg-user" placeholder="Nuevo usuario" style="padding:10px;width:250px;margin-bottom:10px">
+        <input id="reg-pass" type="password" placeholder="Nueva contraseña"
+          style="padding:10px;width:250px;margin-bottom:10px">
+        <button onclick="register()" style="padding:10px 20px">Crear cuenta</button>
+
+        <div style="margin-top:20px;font-size:14px">
+          <a href="#" onclick="cancelRegister()">Volver</a>
+        </div>
+      </div>
+
+      <!-- RECUPERACIÓN -->
+      <div id="recovery-screen" style="
+  display:none;
+  position:fixed; inset:0;
+  background:#f4f4f4;
+  flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:inherit;
+">
+        <h2 style="margin-bottom:20px">Recuperar Contraseña</h2>
+
+        <input id="recovery-pin" placeholder="PIN de recuperación" style="padding:10px;width:250px;margin-bottom:10px">
+        <input id="new-pass" type="password" placeholder="Nueva contraseña"
+          style="padding:10px;width:250px;margin-bottom:10px">
+        <button onclick="resetPassword()" style="padding:10px 20px">Cambiar Contraseña</button>
+
+        <div style="margin-top:20px;font-size:14px">
+          <a href="#" onclick="cancelRecovery()">Volver</a>
+        </div>
+      </div>
+
+      <!-- TICKETS -->
+      <section id="pageTickets" class="page" style="display:none;">
+        <h2>Tickets Guardados</h2>
+        <input id="ticket-search" placeholder="Buscar por cliente, SKU o producto" oninput="renderTickets()"
+          style="width:100%; padding:10px; margin:10px 0; border-radius:10px; border:1px solid #ccc;">
+        <button onclick="borrarTodosLosTickets()"
+          style="margin-bottom:10px; background:#c00; color:#fff; padding:10px; border-radius:10px;">
+          🗑 Borrar TODOS los tickets
+        </button>
+        <button onclick="imprimirTicketsSeleccionados()"
+          style="background:#2b7; color:white; padding:10px; border-radius:10px; margin-bottom:10px;">
+          🖨 Imprimir seleccionados
+        </button>
+
+        <table style="width:100%; border-collapse:collapse;" id="tickets-table">
+          <thead>
+            <tr>
+              <th style="padding:8px; border-bottom:1px solid #ccc;">
+                <input type="checkbox" id="select-all-tickets" onclick="toggleAllTickets(this)">
+              </th>
+              <th style="padding:8px; border-bottom:1px solid #ccc;">Fecha</th>
+              <th style="padding:8px; border-bottom:1px solid #ccc;">Cliente</th>
+              <th style="padding:8px; border-bottom:1px solid #ccc;">Producto</th>
+              <th style="padding:8px; border-bottom:1px solid #ccc;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- POPUP TICKET X -->
+      <div id="ticket-x-popup" style="
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.6);
+  justify-content:center; align-items:center;
+  z-index:999;
+">
+        <div id="ticket-x-box" style="
+        background:white;
+        width:5cm;
+        height:10cm;
+        padding:8px;
+        font-family:Arial, sans-serif;
+        border-radius:4px;
+        color:#000;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      ">
+          <div id="ticket-x-content" style="flex:1; font-size:10px; line-height:1.2; overflow:hidden;"></div>
+
+          <div style="margin-top:5px; display:flex; gap:5px;">
+            <button onclick="printTicketX()" style="flex:1; padding:4px; font-size:10px;">🖨 Imprimir</button>
+            <button onclick="closeTicketX()" style="flex:1; padding:4px; font-size:10px;">Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<!--bot-->
+ <div id="chatbot-widget" style="display:none;" class="chatbot-container">
+  <div class="chatbot-header">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span>🤖</span> <strong>Asistente Virtual</strong>
+    </div>
+    <button onclick="toggleChatbot()" style="background:transparent; padding:0; font-size:16px; display:none">✕</button>
+  </div>
+  <div id="chatbot-messages" class="chatbot-messages">
+    <div class="msg bot">
+      ¡Hola! Monitoreo tu inventario en tiempo real.
+      <br><br>Si ves un número rojo en el botón, es que hay tareas urgentes.
+      <br><br>
+  **Puedes preguntar sobre:**
+  <br>• Stock bajo
+  <br>• Envíos pendientes
+  <br>• Ventas
+  <br>• Inventario completo
+  <br>• Alertas Criticas
+  <br>• predecir stock
+  <br>• sugerencias
+  <br>• reordenar
+ <br>• actualizar stock con woocommerce 
+ <br>•Imagenes - Productos 
+    </div>
+  </div>
+  <div class="chatbot-input-area">
+    <input type="text" id="chatbot-input" placeholder="Consultar..." onkeydown="if(event.key === 'Enter') handleChat()"/>
+    <button onclick="handleChat()" style="padding:8px 12px; margin-left:5px;">➤</button>
+  </div>
+</div>
+
+<button onclick="toggleChatbot()" id="chatbot-trigger" class="fab-btn">
+  💬
+  <span id="chatbot-badge" class="notification-badge" style="display:none">0</span>
+</button>
+
+<div id="critical-alert-modal" class="critical-modal" style="display:none;">
+  <div class="critical-content">
+    <div class="critical-header">⚠️ Atención Requerida</div>
+    <div id="critical-body" class="critical-body">
+      </div>
+    <button onclick="closeCriticalModal()" class="critical-btn">Entendido, voy a revisar</button>
+  </div>
+</div>
+
+
+<!-- MODALES MODERNOS PARA CAMBIO DE LICENCIA -->
+
+<!-- Modal de Cambio de Licencia -->
+<div id="change-license-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeChangeLicenseModal()">&times;</button>
+        
+        <div class="modal-header">
+            <h3 class="modal-title">🔄 Cambiar Licencia</h3>
+            <p class="modal-subtitle">Ingrese el código de la nueva licencia</p>
+        </div>
+        
+        <div class="modal-input-group">
+            <label class="modal-label" for="license-code-input">Código de Licencia</label>
+            <input 
+                type="text" 
+                id="license-code-input" 
+                class="modal-input" 
+                placeholder="Ej: INV-CODIGO-LICENCIA"
+                onkeydown="if(event.key==='Enter') processLicenseChange()"
+            />
+        </div>
+        
+        <div id="modal-error-message" class="modal-error" style="display: none;"></div>
+        
+        <div class="modal-buttons">
+            <button class="modal-button cancel" onclick="closeChangeLicenseModal()">
+                Cancelar
+            </button>
+            <button id="validate-license-btn" class="modal-button validate" onclick="processLicenseChange()">
+                🔍 Validar Licencia
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Éxito -->
+<div id="success-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+        <button class="modal-close" onclick="closeSuccessModal()">&times;</button>
+        
+        <div id="success-modal-content">
+            <!-- Contenido dinámico se genera aquí -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Ayuda -->
+<div id="help-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 700px;">
+        <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+        
+        <div class="modal-header">
+            <h3 class="modal-title">❓ Sistema de Licencias - Ayuda</h3>
+            <p class="modal-subtitle">Información completa sobre el sistema de licencias</p>
+        </div>
+        
+        <div style="text-align: left; line-height: 1.6;">
+            <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #0066cc;">
+                <h4 style="color: #0066cc; margin-bottom: 15px;">📋 Tipos de Licencias</h4>
+                <div style="display: grid; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🧪</span>
+                        <div>
+                            <strong>Licencias de Prueba:</strong>
+                            <div style="color: #666; font-size: 14px;">Expiran automáticamente después del período de prueba</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">⭐</span>
+                        <div>
+                            <strong>Licencias Estándar:</strong>
+                            <div style="color: #666; font-size: 14px;">No tienen fecha de expiración, duración ilimitada</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <h4 style="color: #856404; margin-bottom: 15px;">🔄 Proceso de Validación</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #856404;">
+                    <li style="margin-bottom: 8px;">La aplicación valida la licencia con el sistema</li>
+                    <li style="margin-bottom: 8px;">Si la licencia de prueba expira, deberá ingresar una nueva</li>
+                    <li style="margin-bottom: 8px;">La validación verifica estado, fechas y vigencia</li>
+                    <li>Solo acepta licencias válidas y activas</li>
+                </ul>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #d4edda, #c3e6cb); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                <h4 style="color: #155724; margin-bottom: 15px;">💡 Información Importante</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #155724;">
+                    <li style="margin-bottom: 8px;">Para obtener una licencia, contacte al administrador</li>
+                    <li>Puede cambiar licencias desde "🔒 Gestión de Licencias"</li>
+                </ul>
+            </div>
+            
+            
+        </div>
+        
+        <div class="modal-buttons" style="justify-content: center; margin-top: 30px;">
+            <button class="modal-button" onclick="closeHelpModal()" style="background: linear-gradient(135deg, #6c757d, #5a6268); color: white; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold;">
+                Entendido, gracias
+            </button>
+        </div>
+    </div>
+</div>
+
+</script><script src="js/bot.js"></script>
+<script src="js/app.js"></script>
+
+<!-- ✅ NUEVO: Modal de Autenticación Firebase -->
+<div id="auth-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <button class="modal-close" onclick="cerrarModalAuth()">&times;</button>
+        
+        <div class="modal-header">
+            <h3 class="modal-title">🔐 Autenticación Firebase</h3>
+            <p class="modal-subtitle">Ingresa con tu cuenta de Firebase</p>
+        </div>
+        
+        <div id="auth-modal-error" class="modal-error" style="display: none;"></div>
+        
+        <div class="modal-input-group">
+            <label class="modal-label" for="auth-email">Email</label>
+            <input 
+                type="email" 
+                id="auth-email" 
+                class="modal-input" 
+                placeholder="tu@email.com"
+                onkeydown="if(event.key==='Enter') autenticarFirebase()"
+            />
+        </div>
+        
+        <div class="modal-input-group">
+            <label class="modal-label" for="auth-password">Contraseña</label>
+            <input 
+                type="password" 
+                id="auth-password" 
+                class="modal-input" 
+                placeholder="Tu contraseña"
+                onkeydown="if(event.key==='Enter') autenticarFirebase()"
+            />
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="modal-button cancel" onclick="cerrarModalAuth()">
+                Cancelar
+            </button>
+            <button id="auth-login-btn" class="modal-button validate" onclick="autenticarFirebase()">
+                🔓 Iniciar Sesión
+            </button>
+        </div>
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; text-align: center;">
+            <p id="auth-current-user" style="font-size: 13px; color: #666; margin: 0;">
+                Usuario actual: <strong id="auth-user-email">Ninguno</strong>
+            </p>
+            <button id="auth-logout-btn" onclick="logoutFirebase()" style="
+                margin-top: 10px; 
+                background: #dc3545; 
+                color: white; 
+                border: none; 
+                padding: 8px 16px; 
+                border-radius: 4px; 
+                cursor: pointer;
+                display: none;
+            ">
+                🔒 Cerrar Sesión
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ MODAL ESCÁNER QR/CÓDIGO DE BARRAS -->
+<div id="scanner-modal" class="modal-overlay" style="z-index: 10001;">
+    <div class="modal-content" style="max-width: 500px; width: 95%;">
+        <button class="modal-close" onclick="cerrarScanner()">&times;</button>
+        
+        <div class="modal-header">
+            <h3 class="modal-title">📷 Escanear Código</h3>
+            <p class="modal-subtitle">Apunta la cámara al código QR o código de barras</p>
+        </div>
+        
+        <!-- Área del escáner -->
+        <div id="scanner-container" style="width: 100%; margin: 15px 0;">
+            <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+        </div>
+        
+        <!-- Indicador de estado -->
+        <div id="scanner-status" style="padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center;">
+            <!-- Estado se muestra aquí -->
+        </div>
+        
+        <!-- Controles -->
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="cambiarCamara()" id="btn-cambiar-camara" style="background: #6c757d; padding: 10px 20px;">
+                🔄 Cambiar Cámara
+            </button>
+            <button onclick="cerrarScanner()" style="background: #dc3545; padding: 10px 20px;">
+                ✕ Cerrar
+            </button>
+        </div>
+        
+        <!-- Instrucciones -->
+        <div style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px;">
+            <strong>💡 Consejos:</strong>
+            <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #666;">
+                <li>Mantén el código bien iluminado</li>
+                <li>Sostén el dispositivo estable</li>
+                <li>El código QR puede contener JSON con datos del producto</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ MODAL QR - IMPRIMIR ETIQUETA -->
+<div id="qr-label-modal" class="modal-overlay" style="z-index: 10001;">
+    <div class="modal-content" style="max-width: 400px; width: 95%;">
+        <button class="modal-close" onclick="cerrarQRModal()">&times;</button>
+        
+        <div class="modal-header">
+            <h3 class="modal-title">🏷️ Etiqueta QR</h3>
+            <p class="modal-subtitle">Previsualización de la etiqueta para impresión</p>
+        </div>
+        
+        <!-- Área de previsualización -->
+        <div id="qr-label-preview">
+            <div id="qr-label-content">
+                <!-- El contenido QR se genera aquí -->
+            </div>
+        </div>
+        
+        <!-- Información del producto -->
+        <div id="qr-product-info" style="margin-bottom: 15px;">
+            <!-- Info del producto se muestra aquí -->
+        </div>
+        
+        <!-- Controles -->
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="printQRLabel()" style="background: #28a745; padding: 10px 20px;">
+                🖨️ Imprimir Etiqueta
+            </button>
+            <button onclick="cerrarQRModal()" style="background: #6c757d; padding: 10px 20px;">
+                ✕ Cerrar
+            </button>
+        </div>
+        
+        <!-- Instrucciones -->
+        <div style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px;">
+            <strong>💡 Consejos de impresión:</strong>
+            <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #666;">
+                <li>La etiqueta se imprimirá en tamaño estándar</li>
+                <li>Ajusta los márgenes de impresión según necesidad</li>
+                <li>Puedes pegar la etiqueta en productos o estantes</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Área oculta para impresión -->
+<div id="qr-print-area" style="display: none;"></div>
+
+</body>
+
+</html>

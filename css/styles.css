@@ -1,0 +1,1612 @@
+:root{
+      --bg:#FBF8FF;
+      --panel:#FFF;
+      --muted:#8a8a9f;
+      --accent:#A8D5E2;
+      --accent-2:#026669;
+      --accent-3:#E9E7FF;
+      --glass: rgba(255,255,255,0.7);
+      --card-shadow: 0px 3px 22px -4px #c9c9c9;
+      --radius:14px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg), #fff);color:#2a2a35}
+    a{color:inherit}
+    .app{display:flex;min-height:100vh;gap:20px}
+    .sidebar{width:270px;background:#223141;color: white; border-radius:18px;margin:18px;padding:18px;box-shadow:var(--card-shadow);flex-shrink:0;display:flex;flex-direction:column;gap:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+    .brand h1{font-size:16px;margin:0}
+    nav{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    .menu-btn{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .18s}
+    .menu-btn:hover{transform:translateX(6px)}
+    .menu-btn.active{background:linear-gradient(90deg,var(--accent-3),var(--accent-2));box-shadow:0 6px 18px rgba(168,213,226,0.18)}
+    .small{font-size:13px;color:black}
+    .main{flex:1;margin:20px auto}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .search{display:flex;align-items:center;gap:8px; margin-bottom: 20px;}
+    input,select,textarea{padding:10px;border-radius:10px;border:1px solid #eee;outline:none;font-size:14px}
+    input:focus,select:focus,textarea:focus{box-shadow:0 6px 18px rgba(0,0,0,0.06);border-color:var(--accent)}
+    .card{background:var(--panel);padding:16px;border-radius:12px;box-shadow:var(--card-shadow);}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+     .grid-2{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .col-4{grid-column:span 4}
+    .col-8{grid-column:span 8}
+    .col-6{grid-column:span 6}
+    .col-12{grid-column:span 12}
+    form .row{display:flex;gap:10px;margin-bottom:10px}
+    form .row > *{flex:1}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+
+    /* 🔵 BOTONES TURQUESA GRADIENTE */
+    button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 0;
+      background: linear-gradient(90deg, #00bcd4, #26c6da);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.1s ease;
+    }
+    button:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+    button:active {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+
+    button[onclick*="limpiarDashboard"], button[onclick*="eliminarVentas"] {
+      background: linear-gradient(90deg,  #00bcd4, #26c6da);
+      font-weight: 600;
+    }
+    button[onclick*="limpiarDashboard"]:hover,
+    button[onclick*="eliminarVentas"]:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Estilos para botón de sincronización de ventas */
+    button[onclick*="syncSalesFromWooCommerce"] {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button[onclick*="syncSalesFromWooCommerce"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      background: linear-gradient(135deg, #218838, #1ea080);
+    }
+
+    /* Estilos para botones de envío en historial de ventas */
+    button[onclick*="addShippingFromSale"] {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button[onclick*="addShippingFromSale"]:hover {
+      background: #545b62;
+      transform: scale(1.05);
+    }
+
+    /* Estilo para badge de envío */
+    .shipping-badge {
+      background: #17a2b8;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    /* Estilos para modal de envío */
+    .modal form input,
+    .modal form textarea,
+    .modal form select {
+      font-family: inherit;
+      transition: border-color 0.3s ease;
+    }
+
+    .modal form input:focus,
+    .modal form textarea:focus {
+      outline: none;
+      border-color: #17a2b8;
+      box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.25);
+    }
+    
+    .hidden {
+      display:none;
+    }
+
+    /* =========================================================
+       ESTILOS PARA CONFIGURACIÓN FIREBASE
+    ========================================================= */
+    .firebase-config-section {
+      background: var(--panel);
+      padding: 24px;
+      border-radius: var(--radius);
+      border: 1px solid #e1e5e9;
+    }
+
+    .firebase-config-section h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--accent-2);
+      font-size: 18px;
+    }
+
+    .firebase-config-section .config-status {
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+    }
+
+    .firebase-config-section .config-help {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent);
+    }
+
+    .firebase-config-section .config-help p {
+      margin: 0 0 10px 0;
+      font-weight: 600;
+      color: var(--accent-2);
+    }
+
+    .firebase-config-section .config-help ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .firebase-config-section .config-help li {
+      margin-bottom: 5px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .firebase-config-section .form-group {
+      margin-bottom: 15px;
+    }
+
+    .firebase-config-section label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .firebase-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .firebase-buttons button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .firebase-buttons button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .firebase-buttons button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(168, 213, 226, 0.3);
+    }
+
+    .firebase-buttons button:hover {
+      transform: translateY(-1px);
+    }
+
+    .firebase-buttons button.danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .firebase-buttons button.danger:hover {
+      background: #c82333;
+    }
+
+    /* Validación visual para textarea de Firebase */
+    #firebase-config.valid {
+      border-color: #28a745;
+      background-color: #f8fff9;
+    }
+
+    #firebase-config.invalid {
+      border-color: #dc3545;
+      background-color: #fff8f8;
+    }
+
+    /* =========================================================
+       ESTILOS PARA CONFIGURACIÓN WOOCOMMERCE
+    ========================================================= */
+    .woo-config-section {
+      background: var(--panel);
+      padding: 24px;
+      border-radius: var(--radius);
+      border: 1px solid #e1e5e9;
+    }
+
+    .woo-config-section h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--accent-2);
+      font-size: 18px;
+    }
+
+    .woo-config-section .config-status {
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+    }
+
+    .woo-config-section .config-help {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent);
+    }
+
+    .woo-config-section .config-help p {
+      margin: 0 0 10px 0;
+      font-weight: 600;
+      color: var(--accent-2);
+    }
+
+    .woo-config-section .config-help ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .woo-config-section .config-help li {
+      margin-bottom: 5px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .woo-config-section .form-group {
+      margin-bottom: 15px;
+    }
+
+    .woo-config-section label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .woo-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .woo-buttons button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .woo-buttons button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .woo-buttons button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(168, 213, 226, 0.3);
+    }
+
+    .woo-buttons button:hover {
+      transform: translateY(-1px);
+    }
+
+    .woo-buttons button.danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .woo-buttons button.danger:hover {
+      background: #c82333;
+    }
+
+    /* Validación visual para campos de WooCommerce */
+    #woo-url.valid,
+    #woo-key.valid,
+    #woo-secret.valid {
+      border-color: #28a745;
+      background-color: #f8fff9;
+    }
+
+    #woo-url.invalid,
+    #woo-key.invalid,
+    #woo-secret.invalid {
+      border-color: #dc3545;
+      background-color: #fff8f8;
+    }
+
+    /* Responsive para botones */
+    @media (max-width: 768px) {
+      .woo-buttons,
+      .firebase-buttons {
+        flex-direction: column;
+      }
+      
+      .woo-buttons button,
+      .firebase-buttons button {
+        width: 100%;
+      }
+    }
+
+    .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+    .product{padding:12px;border-radius:12px;background:linear-gradient(180deg,#fff,#e1e1e1);box-shadow:0 6px 14px rgba(30,30,40,0.04)}
+    .tag{display:inline-block;padding:6px 8px;border-radius:999px;font-size:12px;background:var(--accent-3);}
+   
+    .muted{color:#434343}
+    .flex{display:flex;align-items:center;gap:8px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #f0f0f6}
+    .fade{transition:all .18s ease}
+    .count-bubble{background:var(--accent-2);padding:6px 8px;border-radius:999px;font-weight:600}
+    #tabla-pedidos td button {
+      padding:6px 10px;
+      border-radius:8px;
+      border:0;
+      background:linear-gradient(90deg,#A8D5E2,#7CD1C0);
+      cursor:pointer;
+      transition:0.2s;
+    }
+    #tabla-pedidos td button:hover {
+      transform:scale(1.05);
+    }
+
+    /* Estilos para iconos de proveedores */
+    #suppliers-table td button {
+      padding:6px 12px;
+      border-radius:8px;
+      border:0;
+      cursor:pointer;
+      transition:0.2s;
+      font-size:12px;
+      font-weight:500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #suppliers-table td button:hover {
+      transform:translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    #suppliers-table td button[style*="background:#25D366"] {
+      background: linear-gradient(135deg, #25D366, #20C957) !important;
+    }
+    
+    #suppliers-table td button[style*="background:#4285F4"] {
+      background: linear-gradient(135deg, #4285F4, #34A853) !important;
+    }
+    
+    #suppliers-table td button[style*="background:#FFA500"] {
+      background: linear-gradient(135deg, #FFA500, #FF8C00) !important;
+    }
+    
+    #suppliers-table td button[style*="background:#ff4444"] {
+      background: linear-gradient(135deg, #ff4444, #DC143C) !important;
+    }
+    /* ==========================================
+   ESTILOS DEL CHATBOT
+   ========================================== */
+.chatbot-container {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 320px;
+  height: 450px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+  overflow: hidden;
+  border: 1px solid #eee;
+  font-family: Inter, system-ui, sans-serif;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.chatbot-header {
+  background: var(--accent-2, #026669); /* Usa tu color principal */
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chatbot-messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background: #f9f9fc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 85%;
+  word-wrap: break-word;
+}
+
+.msg.bot {
+  background: white;
+  border: 1px solid #eee;
+  color: #333;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.msg.user {
+  background: var(--accent, #A8D5E2); /* Usa tu color secundario */
+  color: #004d40;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+  font-weight: 500;
+}
+
+.chatbot-input-area {
+  padding: 10px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+}
+
+.chatbot-input-area input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 13px;
+}
+/* ==========================================
+   ESTILOS DE NOTIFICACIONES Y ALERTAS
+   ========================================== */
+
+/* Botón Flotante Ajustado */
+.fab-btn {
+  position: fixed; 
+  bottom: 20px; 
+  right: 20px; 
+  width: 60px; 
+  height: 60px; 
+  border-radius: 50%; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9998; 
+  font-size: 30px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  border: none;
+  background-color: var(--accent-2, #026669);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.fab-btn:hover {
+  transform: scale(1.05);
+}
+
+/* El Contador Rojo (Badge) */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4444; /* Rojo alerta */
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  animation: bounceIn 0.5s;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Modal de Alerta Crítica */
+.critical-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7); /* Fondo oscuro */
+  z-index: 10001; /* Por encima de todo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.critical-content {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.critical-header {
+  background: #ff4444;
+  color: white;
+  padding: 15px;
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+}
+
+.critical-body {
+  padding: 20px;
+  font-size: 15px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.critical-btn {
+  width: 100%;
+  padding: 15px;
+  background: #333;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.critical-btn:hover {
+  background: #000;
+}
+
+/* =========================================================
+   ESTILOS PARA ÓRDENES DE COMPRA
+========================================================= */
+
+/* Estilos para la tabla de órdenes de compra */
+#tabla-ordenes-compra {
+  font-size: 13px;
+}
+
+#tabla-ordenes-compra th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+#tabla-ordenes-compra tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Estados de órdenes con colores distintivos */
+.estado-pendiente {
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado-transito {
+  background: #ffeaa7;
+  color: #fd7e14;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado-entregado {
+  background: #d4edda;
+  color: #28a745;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado-cancelado {
+  background: #f8d7da;
+  color: #dc3545;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Animaciones para los botones de estado */
+#tabla-ordenes-compra button {
+  transition: all 0.2s ease;
+}
+
+#tabla-ordenes-compra button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Estilos para las tarjetas de estadísticas */
+.stats-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Estilos para el formulario de órdenes */
+#orden-compra-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#orden-compra-form input:focus,
+#orden-compra-form select:focus,
+#orden-compra-form textarea:focus {
+  border-color: #026669;
+  box-shadow: 0 0 0 3px rgba(2, 102, 105, 0.1);
+}
+
+/* Estilos para alertas de stock bajo */
+.stock-alert {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.stock-alert::before {
+  content: '⚠️ ';
+  font-weight: bold;
+}
+
+/* Estilos para el reporte de cuentas por pagar */
+#reporte-cuentas-pagar {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Responsive para órdenes de compra */
+@media (max-width: 768px) {
+  #tabla-ordenes-compra {
+    font-size: 11px;
+  }
+  
+  #tabla-ordenes-compra th,
+  #tabla-ordenes-compra td {
+    padding: 6px 4px;
+  }
+  
+  .stats-card {
+    padding: 15px;
+  }
+  
+  #buscar-orden {
+    width: 100% !important;
+    margin-bottom: 10px;
+  }
+}
+
+  /* =========================================================
+     ESTILOS PARA KARDEX PROMEDIO
+  ========================================================= */
+  
+  /* Estilos para la sección de Kardex */
+  #kardex .card {
+    transition: all 0.3s ease;
+  }
+  
+  #kardex .card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  }
+  
+  /* Estilos para métricas del Kardex */
+  #kardex .grid > .col-3 {
+    min-width: 220px;
+  }
+  
+  /* Animaciones para las métricas */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  #kardex .card[style*="linear-gradient"] {
+    animation: fadeInUp 0.5s ease-out;
+  }
+  
+  /* Estilos para la tabla de Kardex */
+  #tabla-kardex {
+    font-size: 13px;
+  }
+  
+  #tabla-kardex th {
+    background: linear-gradient(180deg, #f8f9fa, #e9ecef);
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+  }
+  
+  #tabla-kardex tbody tr {
+    transition: background-color 0.2s ease;
+  }
+  
+  #tabla-kardex tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  #tabla-kardex td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  /* Resaltar productos con alta rotación */
+  .rotacion-alta {
+    color: #28a745;
+    font-weight: 600;
+  }
+  
+  .rotacion-media {
+    color: #ffc107;
+    font-weight: 600;
+  }
+  
+  .rotacion-baja {
+    color: #dc3545;
+    font-weight: 600;
+  }
+  
+  /* Estilos para inputs de filtros */
+  #kardex input[type="date"],
+  #kardex select {
+    padding: 10px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+  }
+  
+  #kardex input[type="date"]:focus,
+  #kardex select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+  }
+  
+  /* Estilos para el input de búsqueda */
+  #buscar-kardex {
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  #buscar-kardex:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+  }
+  
+  /* Estilos para la sección de interpretación */
+  #kardex .card[style*="background:#f8f9fa"] {
+    border-left: 4px solid #667eea;
+  }
+  
+  /* Responsive para Kardex */
+  @media (max-width: 992px) {
+    #kardex .grid > .col-6 {
+      grid-column: span 12;
+    }
+    
+    #kardex .grid > .col-3 {
+      grid-column: span 6;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    #kardex .grid > .col-6,
+    #kardex .grid > .col-3 {
+      grid-column: span 12;
+      margin: 4px;
+    }
+    
+    #tabla-kardex {
+      font-size: 11px;
+    }
+    
+    #tabla-kardex th,
+    #tabla-kardex td {
+      padding: 6px 4px;
+    }
+    
+    #kardex-fecha-inicio,
+    #kardex-fecha-fin,
+    #kardex-proveedor,
+    #kardex-categoria {
+      width: 100%;
+    }
+  }
+  
+  /* Estilos para loading state */
+  .kardex-loading {
+    position: relative;
+    pointer-events: none;
+  }
+  
+  /* Animación de carga para tablas */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  .kardex-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  /* ========================================
+     ESTILOS PARA GRÁFICOS DE KARDEX
+     Previene scroll infinito
+  ======================================== */
+  
+  #kardex .card canvas {
+    max-height: 300px;
+    overflow: hidden;
+  }
+  
+  #kardex .card > div[style*="height: 300px"] {
+    height: 300px !important;
+    max-height: 300px !important;
+    overflow: hidden !important;
+  }
+  
+  #kardex .card > div[style*="height: 300px"] canvas {
+    max-height: 300px !important;
+  }
+  
+  /* Prevenir overflow en toda la sección kardex */
+  #kardex {
+    overflow: hidden;
+  }
+  
+  #kardex .grid {
+    overflow: hidden;
+  }
+  
+  #kardex .card {
+    overflow: hidden;
+  }
+
+  /* ========================================
+     ESTILOS RESPONSIVE Y MENÚ HAMBURGUESA
+     ======================================== */
+  
+  /* Variables para responsive */
+  :root {
+    --sidebar-width: 270px;
+    --sidebar-width-collapsed: 0px;
+    --header-height: 60px;
+    --mobile-menu-width: 280px;
+    --transition-speed: 0.3s;
+  }
+  
+  /* Botón Hamburguesa */
+  .hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 10001;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent));
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .hamburger-btn:hover {
+    transform: scale(1.05);
+  }
+  
+  .hamburger-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .hamburger-btn span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
+  
+  .hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  
+  .hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+  }
+  
+  /* Overlay del menú móvil */
+  .menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity var(--transition-speed) ease;
+  }
+  
+  .menu-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+  
+  /* Sidebar responsive */
+  .sidebar {
+    transition: transform var(--transition-speed) ease, margin var(--transition-speed) ease;
+  }
+  
+  /* Indicador de conexión adaptado para móvil */
+  .mobile-connection-status {
+    display: none;
+  }
+  
+  /* ========================================
+     BREAKPOINTS RESPONSIVE
+     ======================================== */
+  
+  /* Grande Desktop (≥ 1200px) - Mantener diseño actual */
+  @media (min-width: 1200px) {
+    .app {
+      gap: 20px;
+    }
+    
+    .sidebar {
+      width: var(--sidebar-width);
+      margin: 18px;
+    }
+    
+    .main {
+      margin: 20px auto;
+    }
+    
+    .grid {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    
+    .col-4 { grid-column: span 4; }
+    .col-8 { grid-column: span 8; }
+    .col-6 { grid-column: span 6; margin: 4px; }
+    .col-12 { grid-column: span 12; }
+    
+    .products {
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    }
+  }
+  
+  /* Desktop Compacto (992px - 1199px) */
+  @media (min-width: 992px) and (max-width: 1199px) {
+    .app {
+      gap: 15px;
+    }
+    
+    .sidebar {
+      width: 240px;
+      margin: 15px;
+    }
+    
+    .main {
+      margin: 15px;
+    }
+    
+    .grid {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    
+    .col-4 { grid-column: span 4; }
+    .col-8 { grid-column: span 8; }
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+    
+    .products {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .brand h1 {
+      font-size: 14px;
+    }
+  }
+  
+  /* Tablet y Mobile Grande (768px - 991px) - PUNTO DE CAMBIO */
+  @media (max-width: 800px) {
+    /* Ocultar sidebar original */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--mobile-menu-width);
+      height: 100%;
+      margin: 0;
+      border-radius: 0;
+      z-index: 10000;
+      transform: translateX(-100%);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding-top: 80px;
+    }
+    
+    .sidebar.active {
+      transform: translateX(0);
+    }
+    
+    .sidebar .brand {
+      display: none;
+    }
+    
+    .sidebar nav {
+      flex: 1;
+      padding: 0 10px 10px;
+    }
+    
+    /* Mostrar botón hamburguesa */
+    .hamburger-btn {
+      display: flex;
+    }
+    
+    .main {
+      margin: 15px;
+      margin-left: 15px;
+      width: calc(100% - 30px);
+    }
+    
+    /* Grid adaptativo */
+    .grid {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    
+    .col-4, .col-8, .col-6 {
+      grid-column: span 12;
+    }
+    
+    .col-3 {
+      grid-column: span 6;
+    }
+    
+    .products {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    /* Reducir padding de cards */
+    .card {
+      padding: 14px;
+    }
+    
+    /* Adaptar formulario */
+    form .row {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    form .row > * {
+      flex: none;
+      width: 100%;
+    }
+    
+    /* Ocultar indicador del sidebar original */
+    .sidebar > div:last-child {
+      display: none;
+    }
+    
+    /* Mostrar indicador simplificado en顶部 */
+    .mobile-connection-status {
+      display: flex;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 9999;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    
+    .mobile-connection-status span {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Tablas con scroll horizontal */
+    .card table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    
+    .card table th,
+    .card table td {
+      min-width: 120px;
+    }
+  }
+  
+  /* Mobile Mediano (576px - 767px) */
+  @media (max-width: 767px) {
+    :root {
+      --header-height: 55px;
+    }
+    
+    .app {
+      gap: 10px;
+      padding-top: 70px;
+    }
+    
+    .hamburger-btn {
+      top: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
+    }
+    
+    .main {
+      margin: 10px;
+      margin-left: 10px;
+      width: calc(100% - 20px);
+    }
+    
+    /* Tamaño de botones */
+    button {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    
+    /* Cards más compactos */
+    .card {
+      padding: 12px;
+      border-radius: 10px;
+    }
+    
+    h2 {
+      font-size: 20px;
+    }
+    
+    h3 {
+      font-size: 16px;
+    }
+    
+    /* Productos en grid de 2 columnas */
+    .products {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
+    .product {
+      padding: 10px;
+      border-radius: 10px;
+    }
+    
+    .product h4 {
+      font-size: 13px;
+    }
+    
+    .product .price {
+      font-size: 14px;
+    }
+    
+    /* Inputs más grandes para touch */
+    input, select, textarea {
+      padding: 12px;
+      font-size: 16px; /* Evitar zoom en iOS */
+      border-radius: 8px;
+    }
+    
+    /* Labels más visibles */
+    label {
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    
+    /* Grid de métricas - 2 columnas */
+    .grid > .col-3 {
+      grid-column: span 6;
+    }
+    
+    /* Reducir tamaño de tablas */
+    #tabla-pedidos td,
+    #tabla-pedidos th {
+      padding: 6px;
+      font-size: 12px;
+    }
+    
+    /* Ocultar elementos no esenciales en móvil */
+    .hide-mobile {
+      display: none !important;
+    }
+    
+    /* Indicadores de estado más pequeños */
+    .mobile-connection-status span {
+      font-size: 10px;
+      padding: 3px 6px;
+    }
+  }
+  
+  /* Mobile Pequeño (480px - 575px) */
+  @media (max-width: 575px) {
+    :root {
+      --mobile-menu-width: 85vw;
+    }
+    
+    .hamburger-btn {
+      width: 38px;
+      height: 38px;
+      padding: 8px;
+    }
+    
+    .hamburger-btn span {
+      width: 20px;
+      height: 2px;
+    }
+    
+    .main {
+      margin: 8px;
+      width: calc(100% - 16px);
+    }
+    
+    /* Una sola columna para productos */
+    .products {
+      grid-template-columns: 1fr;
+    }
+    
+    /* Grids a una columna */
+    .grid > .col-3,
+    .grid > .col-4,
+    .grid > .col-6 {
+      grid-column: span 12;
+    }
+    
+    /* Cards muy compactos */
+    .card {
+      padding: 10px;
+    }
+    
+    /* Buttons a ancho completo en formularios */
+    form .row > * button {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    /* Ajuste de métricas */
+    #kardex .grid > .col-3 {
+      min-width: auto;
+    }
+    
+    /* Tablas - reducir más */
+    table {
+      font-size: 12px;
+    }
+    
+    th, td {
+      padding: 6px 4px;
+    }
+    
+    /* Ocultar más elementos */
+    .hide-xs {
+      display: none !important;
+    }
+    
+    /* Ajustar modales */
+    .modal-content {
+      width: 95%;
+      margin: 10px;
+      padding: 15px;
+    }
+    
+    /* Ajustar el indicador de estado */
+    .mobile-connection-status {
+      top: 10px;
+      right: 10px;
+      left: 60px;
+      justify-content: flex-start;
+    }
+  }
+  
+  /* Mobile Muy Pequeño (< 480px) */
+  @media (max-width: 480px) {
+    .app {
+      padding-top: 65px;
+    }
+    
+    .card {
+      padding: 8px;
+      border-radius: 8px;
+    }
+    
+    h2 {
+      font-size: 18px;
+    }
+    
+    /* Buttons muy compactos */
+    button {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    
+    /* Inputs */
+    input, select, textarea {
+      padding: 10px;
+    }
+    
+    /* Ocultar elementos secundarios */
+    .hide-xxs {
+      display: none !important;
+    }
+    
+    /* Indicadores muy pequeños */
+    .mobile-connection-status span {
+      font-size: 9px;
+      padding: 2px 4px;
+    }
+  }
+  
+  /* ========================================
+     UTILIDADES RESPONSIVE ADICIONALES
+     ======================================== */
+  
+  /* Ocultar elementos según breakpoint */
+  @media (min-width: 992px) {
+    .hide-desktop {
+      display: none !important;
+    }
+  }
+  
+  @media (max-width: 991px) {
+    .hide-mobile {
+      display: none !important;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .hide-tablet {
+      display: none !important;
+    }
+  }
+  
+  /* Evitar selección de texto en botones */
+  .hamburger-btn, button {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  
+  /* Mejorar scroll en móviles */
+  .sidebar,
+  .chatbot-messages,
+  .modal-content {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevenir overflow horizontal global */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Asegurar imágenes responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Contenedores de表格 con scroll */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-container table {
+    min-width: 100%;
+  }
+  
+  /* ========================================
+     ANIMACIONES DEL MENÚ
+     ======================================== */
+  
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideOutLeft {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  /* ========================================
+     ESTILOS PARA EL SIDEBAR EN MÓVIL
+     ======================================== */
+  
+  .sidebar.active {
+    animation: slideInLeft var(--transition-speed) ease;
+  }
+  
+  .sidebar:not(.active) {
+    animation: slideOutLeft var(--transition-speed) ease;
+  }
+  
+  .menu-overlay.active {
+    animation: fadeIn var(--transition-speed) ease;
+  }
+  
+  /* ========================================
+     PADDING ADAPTATIVO PARA CONTENIDO
+     ======================================== */
+  
+  @media (max-width: 991px) {
+    .main {
+      padding-bottom: 20px;
+    }
+    
+    .page {
+      padding-top: 10px;
+    }
+  }
+
+.page{
+width: 98%;
+}
+.card-productos{
+ margin: 10px 0 ;
+     display: flex;
+    gap: 6px;
+}
+@media (max-width: 800px) {
+    .card-productos {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 10px;
+        width: 70%;
+        margin: 10px auto;
+    }
+  }
